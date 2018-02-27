@@ -570,13 +570,27 @@ in a valid context, it parses it OK in any value expression context.
 unnamed parameter or named parameter
 use in e.g. select * from t where a = ?
 select x from t where x > :param
+select x from t where x > %(param)s
 
-> parameter :: Parser ValueExpr
 > parameter = choice
 >     [Parameter <$ questionMark
 >     ,HostParameter
 >      <$> hostParameterToken
->      <*> optionMaybe (keyword "indicator" *> hostParameterToken)]
+>      <*> optionMaybe (keyword "indicator" *> hostParameterToken)
+>     ,HostParameter
+>      <$> psycopg2ParamterToken
+>      <*> optionMaybe (keyword "indicator" *> psycopg2ParamterToken)]
+>   where
+
+psycopg2 parameter
+see https://www.python.org/dev/peps/pep-0249/#paramstyle
+
+>     psycopg2ParamterToken :: Parser String
+>     psycopg2ParamterToken = do
+>       lexeme $ string "%("
+>       a <- identifier
+>       lexeme $ string ")s"
+>       pure a
 
 == parens
 
